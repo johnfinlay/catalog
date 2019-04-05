@@ -15,7 +15,8 @@ session = DBSession()
 
 @app.route('/')
 def homePage():
-    return 'Home Page'
+    categories = session.query(Category).all()
+    return render_template('index.html', categories = categories)
 
 @app.route('/login', methods = ['GET','POST'])
 def login():
@@ -34,7 +35,7 @@ def itemDetail(category, item):
     return 'Item Details Page'
 
 @app.route('/<category>/items/new', methods = ['GET','POST'])
-def newItem():
+def newItem(category):
     return 'New Item Page'
 
 @app.route('/<category>/<item>/edit', methods = ['GET','POST'])
@@ -42,7 +43,7 @@ def editItem(category, item):
     return 'Edit Item Page'
 
 @app.route('/<category>/<item>/delete', methods = ['GET','POST'])
-def editItem(category, item):
+def deleteItem(category, item):
     return 'Delete Item Page'
 
 @app.route('/api/categories')
