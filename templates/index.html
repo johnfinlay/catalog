@@ -6,8 +6,7 @@
 
 {% block content %}
     {% for c in categories %}
-        <div class="jumbotron">
             <h4><a href="{{ url_for('categoryItems', category=c.name) }}">{{ c.name }}</a></h4>
-        </div>
+        
     {% endfor %}
 {% endblock %}
