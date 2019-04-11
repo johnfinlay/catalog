@@ -13,6 +13,7 @@ Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
+
 @app.route('/')
 def homePage():
     categories = session.query(Category).all()
@@ -20,7 +21,7 @@ def homePage():
 
 @app.route('/login', methods = ['GET','POST'])
 def login():
-    return 'Login Page'
+    return render_template('login.html')
 
 @app.route('/logout', methods = ['POST'])
 def logout():
@@ -28,15 +29,26 @@ def logout():
 
 @app.route('/<category>/items')
 def categoryItems(category):
-    return 'List of items for category'
+    return render_template('category.html')
 
 @app.route('/<category>/<item>')
 def itemDetail(category, item):
-    return 'Item Details Page'
+    return render_template('item.html')
 
 @app.route('/<category>/items/new', methods = ['GET','POST'])
 def newItem(category):
-    return 'New Item Page'
+    if request.method == 'POST':
+        cat = session.query(Category).filter_by(category_name=category).one()
+        newItem = Item(name = request.form['name'],
+            description = request.form['description'],
+            user_id = request.form['user'],
+            category_id = cat.id)
+        session.add(newItem)
+        session.commit()
+        flash('New Restaurant Added')
+        return redirect(url_for('homePage'))
+    else:
+        return render_template('newitem.html')
 
 @app.route('/<category>/<item>/edit', methods = ['GET','POST'])
 def editItem(category, item):
