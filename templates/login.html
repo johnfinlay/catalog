@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+
+{% block header %}
+    <h2>{% block title %}Login{% endblock %}</h2>
+{% endblock %}
+
+{% block content %}
+    <!-- Begin Facebook Login -->
+
+    <script>
+    window.fbAsyncInit = function() {
+        FB.init({
+        appId      : '682148048869104',
+        cookie     : true,
+        xfbml      : true,
+        version    : 'v3.2'
+        });
+        
+        FB.AppEvents.logPageView();   
+        
+    };
+
+    (function(d, s, id){
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) {return;}
+        js = d.createElement(s); js.id = id;
+        js.src = "https://connect.facebook.net/en_US/sdk.js";
+        fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+
+    
+    function checkLoginState() {
+    FB.getLoginStatus(function(response) {
+        statusChangeCallback(response);
+    });
+    }
+
+    function statusChangeCallback(response) {
+    console.log('FB Login Response: ')
+    console.log(response)
+    var access_token = response.authResponse['accessToken'];
+    console.log('Welcome! Fetching access token...');
+    console.log(access_token);
+    FB.api('/me', function(response) {
+        console.log('Successful login for: ' + response.name);
+        $.ajax({
+        type: 'POST',
+        url: '/fbconnect?state={{STATE}}',
+        processData: false,
+        data: access_token,
+        contentType: 'application/octet-stream; charset=utf-8',
+        success: function(result) {
+            // Handle or verify the server response if necessary.
+            if (result) {
+            $('#result').html('Login Successful!</br>'+ result + '</br>Redirecting...')
+            setTimeout(function() {
+            window.location.href = "/";
+            }, 4000);
+            
+        } else {
+            $('#result').html('Failed to make a server-side call. Check your configuration and console.');
+            }
+        }
+        
+    });
+        });
+    }
+
+    </script>
+
+    <fb:login-button 
+    scope="public_profile,email"
+    onlogin="checkLoginState();">
+    </fb:login-button>
+
+
+    <!-- End Facebook Login -->
+{% endblock %}

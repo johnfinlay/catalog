@@ -12,6 +12,7 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     username = Column(String(250))
     provider = Column(String(250))
+    email = Column(String(250))
     image = Column(String(250))
 
 
