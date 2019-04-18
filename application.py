@@ -29,13 +29,13 @@ session = DBSession()
 @app.route('/')
 def homePage():
     categories = session.query(Category).all()
-    return render_template('index.html', categories = categories)
+    return render_template('index.html', categories = categories, login_session=login_session)
 
 @app.route('/login')
 def login():
     STATE = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(32))
     login_session['state'] = STATE
-    return render_template('login.html', STATE = STATE)
+    return render_template('login.html', STATE = STATE, login_session=login_session)
 
 
 @app.route('/fbconnect', methods = ['POST'])
@@ -103,17 +103,29 @@ def fbConnect():
     return redirect(url_for('homePage'))
 
 
-@app.route('/logout', methods = ['POST'])
+@app.route('/logout')
 def logout():
-    return 'Logout'
+    if 'provider' in login_session:
+        if login_session['provider'] == 'facebook':
+            fbDisconnect()
+            del login_session['facebook_id']
+        del login_session['user_id']
+        del login_session['username']
+        del login_session['email']
+        del login_session['picture']
+        del login_session['provider']
+        flash('You have been successfully logged out.')
+    else:
+        flash('You were not logged in to begin with.')
+    return redirect(url_for('homePage'))
 
 @app.route('/<category>/items')
 def categoryItems(category):
-    return render_template('category.html')
+    return render_template('category.html', login_session=login_session)
 
 @app.route('/<category>/<item>')
 def itemDetail(category, item):
-    return render_template('item.html')
+    return render_template('item.html', login_session=login_session)
 
 @app.route('/<category>/items/new', methods = ['GET','POST'])
 def newItem(category):
@@ -128,15 +140,15 @@ def newItem(category):
         flash('New Restaurant Added')
         return redirect(url_for('homePage'))
     else:
-        return render_template('newitem.html')
+        return render_template('newitem.html', login_session=login_session)
 
 @app.route('/<category>/<item>/edit', methods = ['GET','POST'])
 def editItem(category, item):
-    return 'Edit Item Page'
+    return render_template('edititem.html', login_session=login_session)
 
 @app.route('/<category>/<item>/delete', methods = ['GET','POST'])
 def deleteItem(category, item):
-    return 'Delete Item Page'
+    return render_template('deleteitem.html', login_session=login_session)
 
 @app.route('/api/categories')
 def apiCategories():
@@ -179,6 +191,14 @@ def getUserID(email):
         return user.id
     except:
         return None
+
+def fbDisconnect():
+  facebook_id = login_session['facebook_id']
+  access_token = login_session['access_token']
+  url = 'https://graph.facebook.com/%s/permissions?access_token=%s' % (facebook_id, access_token)
+  h = httplib2.Http()
+  result = h.request(url, 'DELETE')[1]
+  return 'You have been logged out.'
 
 
 
