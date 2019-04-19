@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block header %}
+    <h1>{% block title %}Add Catalog Item{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+    <div class="jumbotron">
+        <div class="container contact-form">
+            <form action="{{ url_for('newItem') }}" method = 'POST'>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="name">Name</label>
+                            <input type='text' size='30' id="name" name='name' class="form-control">
+                            <label for="description">Description</label>
+                            <textarea type='text' size='30' id="description" name='description' class="form-control"></textarea>
+                            <label for="category">Category</label>
+                            <select id='category' name='category' class="form-control">
+                                {% for c in categories %}
+                                    <option value='{{ c.id }}'>{{ c.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <input type='submit' class="btn btn-lg btn-primary" value='Create'>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+{% endblock %}

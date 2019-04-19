@@ -81,6 +81,7 @@ def fbConnect():
     login_session['username'] = data['name']
     login_session['email'] = data['email']
     login_session['facebook_id'] = data['id']
+    login_session['access_token'] = token
 
     url = 'https://graph.facebook.com/v3.2/me/picture?access_token=%s&redirect=0&height=200&width=200' % token
     h = httplib2.Http()
@@ -127,27 +128,34 @@ def categoryItems(category):
 def itemDetail(category, item):
     return render_template('item.html', login_session=login_session)
 
-@app.route('/<category>/items/new', methods = ['GET','POST'])
-def newItem(category):
+@app.route('/items/new', methods = ['GET','POST'])
+def newItem():
+    if 'username' not in login_session:
+        return redirect('/login')
+    categories = session.query(Category).all()
     if request.method == 'POST':
-        cat = session.query(Category).filter_by(category_name=category).one()
         newItem = Item(name = request.form['name'],
             description = request.form['description'],
-            user_id = request.form['user'],
-            category_id = cat.id)
+            user_id = login_session['user_id'],
+            category_id = request.form['category'])
         session.add(newItem)
         session.commit()
-        flash('New Restaurant Added')
+        flash('New Item Added')
         return redirect(url_for('homePage'))
     else:
-        return render_template('newitem.html', login_session=login_session)
+        return render_template('newitem.html', login_session=login_session, categories=categories)
 
 @app.route('/<category>/<item>/edit', methods = ['GET','POST'])
 def editItem(category, item):
-    return render_template('edititem.html', login_session=login_session)
+    categories = session.query(Category).all()
+    if 'username' not in login_session:
+        return redirect('/login')
+    return render_template('edititem.html', login_session=login_session, categories=categories)
 
 @app.route('/<category>/<item>/delete', methods = ['GET','POST'])
 def deleteItem(category, item):
+    if 'username' not in login_session:
+        return redirect('/login')
     return render_template('deleteitem.html', login_session=login_session)
 
 @app.route('/api/categories')
@@ -198,6 +206,7 @@ def fbDisconnect():
   url = 'https://graph.facebook.com/%s/permissions?access_token=%s' % (facebook_id, access_token)
   h = httplib2.Http()
   result = h.request(url, 'DELETE')[1]
+  print(result)
   return 'You have been logged out.'
 
 

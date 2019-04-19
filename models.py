@@ -52,7 +52,8 @@ engine = create_engine('sqlite:///catalog.db')
 
 Base.metadata.create_all(engine)
 
-Base.metadata.bind = engine
+# Uncomment the code below to initialize the database with categories
+""" Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
@@ -67,4 +68,4 @@ session.add_all([
     Category(name='Skating'),
     Category(name='Hockey')
 ])
-session.commit()
+session.commit() """
